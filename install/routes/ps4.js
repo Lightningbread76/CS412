@@ -5,7 +5,18 @@ const {response} = require('express');
 let config = require('../config.json');
 var router = express.Router();
 
-
+router.get('/', async(req, res, next)=>{
+  const result = await nodeFetch(config.fundamentals)
+      .then(res =>
+          res.json()
+      )
+      .then(text => {
+        console.log(text)
+        res.render('form', { title: JSON.stringify(text.Name), desc: JSON.stringify(text.Description),
+            sName: JSON.stringify(req.body.name)})
+      })
+      .catch(err => console.log(err));
+});
 
 /*
 1b:
