@@ -1,6 +1,7 @@
 var express = require('express');
 const nodeFetch = require('node-fetch');
 var request = require('request');
+const responseTime = require('response-time');
 const {response} = require('express');
 let config = require('../config.json');
 const redis = require('redis');
@@ -17,7 +18,7 @@ client.on('error', (err) => {
 });
 
 // use response-time as a middleware
-//router.use(responseTime());
+router.use(responseTime(15));
 
 //ps5b
 router.get('/find/:name', async(req, res, next) => {
@@ -29,7 +30,7 @@ router.get('/find/:name', async(req, res, next) => {
       )
   .then(text =>
     {
-        const textJSON = text.data;
+        const textJSON = text.Name;
         client.setex(url + symbol + config.APIKEY, 3600, JSON.stringify({ source: 'Redis Cache', ...textJSON, }));
         res.render('index', { title: JSON.stringify(text.Name), desc: JSON.stringify(text.Description)})
         //return res.status(500).json({ source: 'Missing Stock Symbol', ...textJSON, });
