@@ -3,10 +3,68 @@ const nodeFetch = require('node-fetch');
 var request = require('request');
 const {response} = require('express');
 let config = require('../config.json');
+const redis = require('redis');
 var router = express.Router();
+// create and connect redis client to local instance.
+const client = redis.createClient();
 
+//URL:
+const url = "https://www.alphavantage.co/query?function=OVERVIEW&symbol="
+
+// Print redis errors to the console
+client.on('error', (err) => {
+  console.log("Error " + err);
+});
+
+// use response-time as a middleware
+//router.use(responseTime());
+
+//ps5b
+router.get('/find/:name', async(req, res, next) => {
+  const name = req.params.name;
+  let symbol = name
+  const result = await nodeFetch(url + symbol + config.APIKEY)
+  .then(res =>
+          res.json()
+      )
+  .then(text =>
+    {
+        const textJSON = text.data;
+        client.setex(url + symbol + config.APIKEY, 3600, JSON.stringify({ source: 'Redis Cache', ...textJSON, }));
+        res.render('index', { title: JSON.stringify(text.Name), desc: JSON.stringify(text.Description)})
+        //return res.status(500).json({ source: 'Missing Stock Symbol', ...textJSON, });
+    })
+    .catch(err =>
+    {
+      console.log(err)  
+      return res.json(err);
+    });
+});
+
+  /*
+  client.exists(name, (err, match) => {  //looks for key
+      if (err) {
+          throw new Error(err)
+      }
+      if (match) { //key exists, grab value
+          client.get(name, (err, response) => {
+              console.table(response);
+              res.send(JSON.stringify(response + ' cached '))
+          })
+
+      } else {
+          const reversedName = name.split('').reverse().join(''); //reverse the string
+          client.set(name, reversedName, 'EX', 5, (err, response) => { //name = key, reversedName = value
+              console.table(response);
+              res.send(JSON.stringify(reversedName + ' not cached '))
+          }) //closure // Promises //async/await
+      }
+  })
+  */
+
+//1f: get form info
 router.get('/', async(req, res, next)=>{
-  const result = await nodeFetch(config.fundamentals)
+  const result = await nodeFetch(url + "TSLA" + config.APIKEY)
       .then(res =>
           res.json()
       )

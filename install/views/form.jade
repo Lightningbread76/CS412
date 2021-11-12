@@ -4,11 +4,7 @@ block content
     h1= "Select a Stock!"
     form(action="/ps4" method="POST")
     p Name:
-        input(type="text" name="name" placeholder="")
+        input(type="text" id = "ticker" name="name" placeholder="")
 
-    input(type="submit" onclick=move)
+    input(type="submit" onclick="location.href='/ps4/find/' + ticker.value")
 
-script.
-    function move() {
-        window.location.href = '/ps4/b'
-    }
